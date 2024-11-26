@@ -1,0 +1,63 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
+import time
+
+# Initialize the WebDriver (Replace 'chromedriver' with your WebDriver path if needed)
+driver = webdriver.Chrome()
+
+try:
+    # Step 1: Navigate to the FitPeo Homepage
+    driver.get("https://www.fitpeo.com/")
+    driver.maximize_window()
+    time.sleep(2)  # Wait for the page to load
+
+    # Step 2: Navigate to the Revenue Calculator Page
+    driver.get("https://fitpeo.com/revenue-calculator")
+    time.sleep(2)  # Wait for the page to load
+
+    # Step 3: Scroll Down to the Slider Section
+    slider_section = driver.find_element(By.CSS_SELECTOR, 'body > div.MuiBox-root.css-3f59le > div.MuiBox-root.css-rfiegf > div.MuiGrid-root.MuiGrid-container.MuiGrid-spacing-xs-6.css-l0ykmo > div:nth-child(2) > div > div > span.MuiSlider-root.MuiSlider-colorPrimary.MuiSlider-sizeMedium.css-16i48op > span.MuiSlider-thumb.MuiSlider-thumbSizeMedium.MuiSlider-thumbColorPrimary.MuiSlider-thumb.MuiSlider-thumbSizeMedium.MuiSlider-thumbColorPrimary.css-1sfugkh')  # Replace with actual selector
+    driver.execute_script("arguments[0].scrollIntoView();", slider_section)
+    time.sleep(2)
+
+    # Step 4: Adjust the Slider to 820
+    slider = driver.find_element(By.CSS_SELECTOR, 'input[id= :R57alklff9da:]')  # Replace with actual selector
+    ActionChains(driver).click_and_hold(slider).move_by_offset(820, 0).release().perform()
+    time.sleep(2)
+
+    # Verify the text field value
+    text_field = driver.find_element(By.CSS_SELECTOR, "selector_for_text_field")  # Replace with actual selector
+    assert text_field.get_attribute("value") == "820"
+
+    # Step 5: Update the Text Field to 560
+    text_field.click()
+    text_field.clear()
+    text_field.send_keys("560")
+    text_field.send_keys(Keys.RETURN)
+    time.sleep(2)
+
+    # Validate slider position
+    assert slider.get_attribute("value") == "560"
+
+    # Step 7: Select CPT Codes
+    cpt_codes = ["CPT-99091", "CPT-99453", "CPT-99454", "CPT-99474"]
+    for code in cpt_codes:
+        checkbox = driver.find_element(By.XPATH, f"//label[contains(text(), '{code}')]/preceding-sibling::input")
+        if not checkbox.is_selected():
+            checkbox.click()
+        time.sleep(2)
+
+    # Step 8: Validate Total Recurring Reimbursement
+    reimbursement_header = driver.find_element(By.CSS_SELECTOR, 'body > div.MuiBox-root.css-3f59le > div.MuiBox-root.css-rfiegf > div.MuiGrid-root.MuiGrid-container.MuiGrid-spacing-xs-6.css-l0ykmo > div:nth-child(1) > div > h3')  # Replace selector
+    assert "$110700" in reimbursement_header.text
+
+    print("All tests passed successfully!")
+
+except Exception as e:
+    print(f"An error occurred: {e}")
+
+finally:
+    # Close the browser
+    driver.quit()
